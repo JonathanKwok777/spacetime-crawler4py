@@ -68,4 +68,4 @@ def is_valid(url):
         return False
 
 def extract_tokens(text):
-    
+    return list()
