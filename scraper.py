@@ -22,7 +22,7 @@ def extract_next_links(url, resp):
         text = soup.get_text()
         if text == None or len(text) == 0:
             return list() # skip any web pages that have no information
-        extract_tokens(text) # get tokens in this url for report
+        tokens = extract_tokens(text) # get tokens in this url for report
         
         tags = soup.find_all('a')
         for tag in tags:
@@ -45,6 +45,8 @@ def is_valid(url):
             return False
         if parsed.hostname != None and parsed.hostname.find("ics.uci.edu") == -1 and parsed.hostname.find("cs.uci.edu") == -1 and parsed.hostname.find("informatics.uci.edu") == -1 and parsed.hostname.find("stat.uci.edu") == -1:
             return False # if the hostname doesn't contain any of these domains then return false
+        if parsed.port != None and parsed.scheme == "https" and parsed.port >= 8000:
+            return False # return false for ports in the 8000s for https since its not common and crawler may not be able to access the page
         if parsed.query != None and parsed.query.find("ical") != -1:
             return False # if ical is found in query then it is a calendar so we should return false so we dont get stuck in a trap
         if re.search(r"\d{4}-\d{2}-\d{2}", parsed.path.lower()) or re.search(r"\d{4}-\d{2}-\d{2}", parsed.query.lower()) or re.search(r"\d{4}-\d{2}", parsed.path.lower()) or re.search(r"\d{4}-\d{2}", parsed.query.lower()):
