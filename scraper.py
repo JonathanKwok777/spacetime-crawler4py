@@ -19,6 +19,11 @@ def extract_next_links(url, resp):
     linkList = list()
     if resp.status == 200:
         soup = BeautifulSoup(resp.raw_response.content, 'html.parser')
+        text = soup.get_text()
+        if text == None or len(text) == 0:
+            return list() # skip any web pages that have no information
+        extract_tokens(text) # get tokens in this url for report
+        
         tags = soup.find_all('a')
         for tag in tags:
             link = tag.get('href')
@@ -40,6 +45,10 @@ def is_valid(url):
             return False
         if parsed.hostname != None and parsed.hostname.find("ics.uci.edu") == -1 and parsed.hostname.find("cs.uci.edu") == -1 and parsed.hostname.find("informatics.uci.edu") == -1 and parsed.hostname.find("stat.uci.edu") == -1:
             return False # if the hostname doesn't contain any of these domains then return false
+        if parsed.query != None and parsed.query.find("ical") != -1:
+            return False # if ical is found in query then it is a calendar so we should return false so we dont get stuck in a trap
+        if re.search(r"\d{4}-\d{2}-\d{2}", parsed.path.lower()) or re.search(r"\d{4}-\d{2}-\d{2}", parsed.query.lower()) or re.search(r"\d{4}-\d{2}", parsed.path.lower()) or re.search(r"\d{4}-\d{2}", parsed.query.lower()):
+            return False # ignore calendar dates so we dont get stuck in an trap + they don't seem to have much info
         return not re.match(
             r".*\.(css|js|bmp|gif|jpe?g|ico"
             + r"|png|tiff?|mid|mp2|mp3|mp4"
@@ -53,3 +62,10 @@ def is_valid(url):
     except TypeError:
         print ("TypeError for ", parsed)
         raise
+    except ValueError:
+        print("ValueError for ", url) 
+        # return false if url is a fake/invalid url like the text: https://[YOUR_IP]:8443/manager/html that was found in a web page
+        return False
+
+def extract_tokens(text):
+    
