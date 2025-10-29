@@ -6,6 +6,8 @@ from utils import get_logger
 import scraper
 import time
 
+from collections import Counter
+
 
 class Worker(Thread):
     def __init__(self, worker_id, config, frontier):
@@ -19,12 +21,14 @@ class Worker(Thread):
         
     def run(self):
         max_token = 0
+        counter = Counter()
         while True:
             tbd_url = self.frontier.get_tbd_url()
             if not tbd_url:
                 self.logger.info("Frontier is empty. Stopping Crawler.")
                 self.logger.info(f"Total unique pages discovered: {len(self.frontier.save)}")
                 self.logger.info(f"The longest page contains {max_token} words")
+                self.logger.info(f"Top 50 words: {counter.most_common(50)}")
                 break
             print(f"Now start with url {tbd_url}")
             resp = download(tbd_url, self.config, self.logger)
@@ -35,9 +39,10 @@ class Worker(Thread):
                 self.frontier.mark_url_complete(tbd_url)
                 time.sleep(self.config.time_delay)
                 continue
-            scraped_urls, token_count = scraper.scraper(tbd_url, resp)
+            scraped_urls, token_count, tokens = scraper.scraper(tbd_url, resp)
             if token_count > max_token:
                 max_token = token_count
+            counter.update(tokens)
             for scraped_url in scraped_urls:
                 self.frontier.add_url(scraped_url)
             self.frontier.mark_url_complete(tbd_url)

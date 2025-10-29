@@ -17,8 +17,8 @@ won't would wouldn't you you'd you'll you're you've your yours yourself yourselv
 
 
 def scraper(url, resp):
-    links, token_count = extract_next_links(url, resp)
-    return [link for link in links if is_valid(link)], token_count
+    links, token_count, tokens = extract_next_links(url, resp) # token_count refers to the # of raw tokens with stop words, while tokens is the list of clean tokens
+    return [link for link in links if is_valid(link)], token_count, tokens
 
 def extract_next_links(url, resp):
     # Implementation required.
@@ -48,7 +48,7 @@ def extract_next_links(url, resp):
             if fragIdx != -1:
                 link = link[:fragIdx] # get rid of fragment part
             linkList.append(link)
-    return linkList, raw_token_count
+    return linkList, raw_token_count, tokens
 
 def is_valid(url):
     # Decide whether to crawl this url or not. 
