@@ -18,12 +18,15 @@ class Worker(Thread):
         super().__init__(daemon=True)
         
     def run(self):
+        max_token = 0
         while True:
             tbd_url = self.frontier.get_tbd_url()
             if not tbd_url:
                 self.logger.info("Frontier is empty. Stopping Crawler.")
                 self.logger.info(f"Total unique pages discovered: {len(self.frontier.save)}")
+                self.logger.info(f"The longest page contains {max_token} words")
                 break
+            print(f"Now start with url {tbd_url}")
             resp = download(tbd_url, self.config, self.logger)
             self.logger.info(
                 f"Downloaded {tbd_url}, status <{resp.status}>, "
@@ -32,7 +35,9 @@ class Worker(Thread):
                 self.frontier.mark_url_complete(tbd_url)
                 time.sleep(self.config.time_delay)
                 continue
-            scraped_urls = scraper.scraper(tbd_url, resp)
+            scraped_urls, token_count = scraper.scraper(tbd_url, resp)
+            if token_count > max_token:
+                max_token = token_count
             for scraped_url in scraped_urls:
                 self.frontier.add_url(scraped_url)
             self.frontier.mark_url_complete(tbd_url)

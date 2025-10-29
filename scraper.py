@@ -17,8 +17,8 @@ won't would wouldn't you you'd you'll you're you've your yours yourself yourselv
 
 
 def scraper(url, resp):
-    links = extract_next_links(url, resp)
-    return [link for link in links if is_valid(link)]
+    links, token_count = extract_next_links(url, resp)
+    return [link for link in links if is_valid(link)], token_count
 
 def extract_next_links(url, resp):
     # Implementation required.
@@ -31,12 +31,13 @@ def extract_next_links(url, resp):
     #         resp.raw_response.content: the content of the page!
     # Return a list with the hyperlinks (as strings) scrapped from resp.raw_response.content
     linkList = list()
+    raw_token_count = 0
     if resp.status == 200:
         soup = BeautifulSoup(resp.raw_response.content, 'html.parser')
         text = soup.get_text()
         if text == None or len(text) == 0:
-            return list() # skip any web pages that have no information
-        tokens = extract_tokens(text) # get tokens in this url for report
+            return list(), 0 # skip any web pages that have no information
+        tokens, raw_token_count = extract_tokens(text) # get tokens in this url for report
         
         tags = soup.find_all('a')
         for tag in tags:
@@ -47,7 +48,7 @@ def extract_next_links(url, resp):
             if fragIdx != -1:
                 link = link[:fragIdx] # get rid of fragment part
             linkList.append(link)
-    return linkList
+    return linkList, raw_token_count
 
 def is_valid(url):
     # Decide whether to crawl this url or not. 
@@ -90,6 +91,6 @@ def extract_tokens(text):
     """
     tokens = re.findall(r"[A-Za-z0-9]+", text)
     clean_tokens = [t.lower() for t in tokens if t.lower() not in STOPWORDS]
-    return clean_tokens
+    return clean_tokens, len(tokens)
 
 
