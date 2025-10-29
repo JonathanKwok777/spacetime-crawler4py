@@ -70,4 +70,11 @@ def is_valid(url):
         return False
 
 def extract_tokens(text):
-    return list()
+    """
+    Extracts clean tokens (words) from webpage text.
+    Removes punctuation, numbers, and stopwords for report analytics.
+    """
+    tokens = re.findall(r"[A-Za-z0-9]+", text)
+    clean_tokens = [t.lower() for t in tokens if t.lower() not in STOPWORDS]
+    return clean_tokens
+
