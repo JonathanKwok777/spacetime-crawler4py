@@ -31,12 +31,18 @@ def extract_next_links(url, resp):
     #         resp.raw_response.content: the content of the page!
     # Return a list with the hyperlinks (as strings) scrapped from resp.raw_response.content
     linkList = list()
+    tokens = list()
     raw_token_count = 0
     if resp.status == 200:
-        soup = BeautifulSoup(resp.raw_response.content, 'html.parser')
-        text = soup.get_text()
-        if text == None or len(text) == 0:
-            return list(), 0 # skip any web pages that have no information
+        try:
+            soup = BeautifulSoup(resp.raw_response.content.decode(errors='strict'), 'lxml')
+        except:
+            print("Encoding Error")
+            return list(), 0, list() # skip web pages that cannot be encoded as html
+       
+        text = soup.get_text(separator = " ")
+        if soup == None or text == None or len(text) == 0:
+            return list(), 0, list() # skip any web pages that have no information
         tokens, raw_token_count = extract_tokens(text) # get tokens in this url for report
         
         tags = soup.find_all('a')
@@ -60,11 +66,9 @@ def is_valid(url):
             return False
         if parsed.hostname != None and parsed.hostname.find("ics.uci.edu") == -1 and parsed.hostname.find("cs.uci.edu") == -1 and parsed.hostname.find("informatics.uci.edu") == -1 and parsed.hostname.find("stat.uci.edu") == -1:
             return False # if the hostname doesn't contain any of these domains then return false
-        if parsed.port != None and parsed.scheme == "https" and parsed.port >= 8000:
-            return False # return false for ports in the 8000s for https since its not common and crawler may not be able to access the page
         if parsed.query != None and parsed.query.find("ical") != -1:
             return False # if ical is found in query then it is a calendar so we should return false so we dont get stuck in a trap
-        if re.search(r"\d{4}-\d{2}-\d{2}", parsed.path.lower()) or re.search(r"\d{4}-\d{2}-\d{2}", parsed.query.lower()) or re.search(r"\d{4}-\d{2}", parsed.path.lower()) or re.search(r"\d{4}-\d{2}", parsed.query.lower()):
+        if re.search(r"\d{4}-\d{2}-\d{2}", parsed.path.lower()) or re.search(r"\d{4}-\d{2}-\d{2}", parsed.query.lower()) or re.search(r"\d{4}-\d{2}/", parsed.path.lower()) or re.search(r"\d{4}-\d{2}", parsed.query.lower()):
             return False # ignore calendar dates so we dont get stuck in an trap + they don't seem to have much info
         return not re.match(
             r".*\.(css|js|bmp|gif|jpe?g|ico"
@@ -74,7 +78,7 @@ def is_valid(url):
             + r"|data|dat|exe|bz2|tar|msi|bin|7z|psd|dmg|iso"
             + r"|epub|dll|cnf|tgz|sha1"
             + r"|thmx|mso|arff|rtf|jar|csv"
-            + r"|rm|smil|wmv|swf|wma|zip|rar|gz)$", parsed.path.lower())
+            + r"|rm|smil|wmv|swf|wma|zip|rar|gz|ppsx)$", parsed.path.lower()) # added ppsx to remove Microsoft powerpoint slide files
 
     except TypeError:
         print ("TypeError for ", parsed)
@@ -89,8 +93,13 @@ def extract_tokens(text):
     Extracts clean tokens (words) from webpage text.
     Removes punctuation, numbers, and stopwords for report analytics.
     """
-    tokens = re.findall(r"[A-Za-z0-9]+", text)
+    pattern2 = r"\w+[’'-]\w+" # pattern for words like: community's, t-mobile
+    pattern3 = r"[0-9]+:[0-9]+" # pattern for words like the time: 10:30
+    pattern4 =  r"\w*[.][0-9]+" # pattern for words that use decimal numbers like 10.3 or v0.7 or .5
+    tokens = re.findall(pattern4 + "|" + pattern3 + "|" + pattern2 + "|" + r"[A-Za-z0-9]+", text) 
+
     clean_tokens = [t.lower() for t in tokens if t.lower() not in STOPWORDS]
+
     return clean_tokens, len(tokens)
 
 

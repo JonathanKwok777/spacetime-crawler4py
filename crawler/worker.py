@@ -7,6 +7,7 @@ import scraper
 import time
 
 from collections import Counter
+from urllib.parse import urlparse
 
 
 class Worker(Thread):
@@ -21,14 +22,29 @@ class Worker(Thread):
         
     def run(self):
         max_token = 0
+        max_page = ""
         counter = Counter()
         while True:
             tbd_url = self.frontier.get_tbd_url()
             if not tbd_url:
                 self.logger.info("Frontier is empty. Stopping Crawler.")
                 self.logger.info(f"Total unique pages discovered: {len(self.frontier.save)}")
-                self.logger.info(f"The longest page contains {max_token} words")
+                self.logger.info(f"The longest page {max_page} contains {max_token} words")
                 self.logger.info(f"Top 50 words: {counter.most_common(50)}")
+                self.logger.info(f"Subdomain Frequencies:")
+                domainFreq = {}
+                # Code taken and modified from PartA.py of Assignment1
+                for url, completed in self.frontier.save.values():
+                    subDomain = urlparse(url).hostname
+                    if subDomain != None:
+                        if subDomain in domainFreq:
+                            domainFreq[subDomain] += 1
+                        else:
+                            domainFreq[subDomain] = 1
+                sorted_items = sorted(domainFreq.items()) # sort alphabetically
+                for subdomain, count in sorted_items:
+                    self.logger.info(f"{subdomain}, {count}")
+                
                 break
             print(f"Now start with url {tbd_url}")
             resp = download(tbd_url, self.config, self.logger)
@@ -42,6 +58,7 @@ class Worker(Thread):
             scraped_urls, token_count, tokens = scraper.scraper(tbd_url, resp)
             if token_count > max_token:
                 max_token = token_count
+                max_page = tbd_url
             counter.update(tokens)
             for scraped_url in scraped_urls:
                 self.frontier.add_url(scraped_url)
