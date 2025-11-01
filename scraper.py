@@ -95,7 +95,7 @@ def extract_tokens(text):
     """
     pattern2 = r"\w+[’'-]\w+" # pattern for words like: community's, t-mobile
     pattern3 = r"[0-9]+:[0-9]+" # pattern for words like the time: 10:30
-    pattern4 =  r"\w*[.][0-9]+" # pattern for words that use decimal numbers like 10.3 or v0.7 or .5
+    pattern4 = r"\w*[.]\w+" # pattern for words that use decimal numbers like 10.3 or v0.7 or .5 or other words like ph.d
     tokens = re.findall(pattern4 + "|" + pattern3 + "|" + pattern2 + "|" + r"[A-Za-z0-9]+", text) 
 
     clean_tokens = [t.lower() for t in tokens if t.lower() not in STOPWORDS]
