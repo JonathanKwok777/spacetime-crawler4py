@@ -8,6 +8,7 @@ import time
 
 from collections import Counter
 from urllib.parse import urlparse
+import hashlib
 
 
 class Worker(Thread):
@@ -24,6 +25,7 @@ class Worker(Thread):
         max_token = 0
         max_page = ""
         counter = Counter()
+        fingerprints = set() # record hash values of each page, if duplicated hash value is found, skip that page
         while True:
             tbd_url = self.frontier.get_tbd_url()
             if not tbd_url:
@@ -52,6 +54,13 @@ class Worker(Thread):
                 f"Downloaded {tbd_url}, status <{resp.status}>, "
                 f"using cache {self.config.cache_server}.")
             if not resp or resp.status != 200 or (not getattr(resp, "raw_response", None)): # BeautifulSoup will throw error if empty raw_response is returned
+                self.frontier.mark_url_complete(tbd_url)
+                time.sleep(self.config.time_delay)
+                continue
+
+            page_hash = hashlib.sha256(resp.raw_response.content).hexdigest()
+            if page_hash in fingerprints:
+                self.logger.info(f"duplicated content detected, skip {tbd_url}")
                 self.frontier.mark_url_complete(tbd_url)
                 time.sleep(self.config.time_delay)
                 continue
