@@ -1,6 +1,7 @@
 import re
 from urllib.parse import urlparse
 from bs4 import BeautifulSoup
+from urllib.parse import urljoin
 
 STOPWORDS = set("""
 a about above after again against all am an and any are aren't as at be because been before
@@ -53,7 +54,7 @@ def extract_next_links(url, resp):
             fragIdx = link.find('#') # find index of fragment part
             if fragIdx != -1:
                 link = link[:fragIdx] # get rid of fragment part
-            linkList.append(link)
+            linkList.append(urljoin(url, link)) # change relative url into absolute url
     return linkList, raw_token_count, tokens
 
 def is_valid(url):
