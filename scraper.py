@@ -34,9 +34,11 @@ def extract_next_links(url, resp):
     linkList = list()
     tokens = list()
     raw_token_count = 0
+    html_size = 0
     if resp.status == 200:
         try:
             soup = BeautifulSoup(resp.raw_response.content.decode(errors='strict'), 'lxml')
+            html_size = len(resp.raw_response.content)
         except:
             print("Encoding Error")
             return list(), 0, list() # skip web pages that cannot be encoded as html
@@ -44,7 +46,12 @@ def extract_next_links(url, resp):
         text = soup.get_text(separator = " ")
         if soup == None or text == None or len(text) == 0:
             return list(), 0, list() # skip any web pages that have no information
+        if html_size > 0 and len(text) / html_size < 0.05:
+            return list(), 0, list() # skip pages that have low textual information content
         tokens, raw_token_count = extract_tokens(text) # get tokens in this url for report
+
+        if len(tokens) < 50:
+            return list(), 0, list() # skip pages that are too short
         
         tags = soup.find_all('a')
         for tag in tags:
