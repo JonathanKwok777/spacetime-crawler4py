@@ -26,8 +26,8 @@ won't would wouldn't you you'd you'll you're you've your yours yourself yourselv
 
 
 def scraper(url, resp):
-    links, token_count, tokens = extract_next_links(url, resp) # token_count refers to the # of raw tokens with stop words, while tokens is the list of clean tokens
-    return [link for link in links if is_valid(link)]
+    links, token_count, tokens = extract_next_links(url, resp)
+    return [link for link in links if is_valid(link)], token_count, tokens
 
 def extract_next_links(url, resp):
     # Implementation required.
@@ -161,6 +161,7 @@ def save_results():
             f.write(f"{domain}, {count}\n")
 
     print("Analytics saved to analytics.txt")
+
 
 
 
