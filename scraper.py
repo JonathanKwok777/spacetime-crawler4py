@@ -136,6 +136,29 @@ def extract_tokens(text):
 
     return clean_tokens, len(tokens)
 
+def save_results():
+    """
+    Saves crawler analytics to a text file for the final report.
+    """
+    with open("analytics.txt", "w", encoding="utf-8") as f:
+        # 1) Unique pages
+        f.write(f"Unique pages: {len(visited_urls)}\n")
+
+        # 2) Longest page
+        f.write(f"Longest page: {longest_page[0]} ({longest_page[1]} words)\n\n")
+
+        # 3) Top 50 most common words
+        f.write("Top 50 most common words:\n")
+        for word, freq in word_counter.most_common(50):
+            f.write(f"{word}: {freq}\n")
+
+        # 4) Subdomains under uci.edu (alphabetical)
+        f.write("\nSubdomains under uci.edu:\n")
+        for domain, count in sorted(subdomain_counter.items()):
+            f.write(f"{domain}, {count}\n")
+
+    print("Analytics saved to analytics.txt")
+
 
 
 
