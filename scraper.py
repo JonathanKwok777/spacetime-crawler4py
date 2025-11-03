@@ -3,6 +3,13 @@ from urllib.parse import urlparse
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin
 
+#Global Analytics Variables
+visited_urls = set() #track unique pages
+word_counter = Counter() #track all word frequencies
+longest_page = ("", 0) #(URL, word_count)
+subdomain_counter = Counter() #count pages per subdomain
+
+#English stopwords list for token filtering
 STOPWORDS = set("""
 a about above after again against all am an and any are aren't as at be because been before
 being below between both but by can can't could couldn't did didn't do does doesn't doing don't
@@ -109,5 +116,6 @@ def extract_tokens(text):
     clean_tokens = [t.lower() for t in tokens if t.lower() not in STOPWORDS]
 
     return clean_tokens, len(tokens)
+
 
 
