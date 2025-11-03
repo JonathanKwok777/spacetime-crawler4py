@@ -107,12 +107,15 @@ def is_valid(url):
         return not re.match(
             r".*\.(css|js|bmp|gif|jpe?g|ico"
             + r"|png|tiff?|mid|mp2|mp3|mp4"
-            + r"|wav|avi|mov|mpeg|ram|m4v|mkv|ogg|ogv|pdf"
+            + r"|wav|avi|mov|mpeg|ram|m4v|mkv|ogg|ogv|pdf|txt"
             + r"|ps|eps|tex|ppt|pptx|doc|docx|xls|xlsx|names"
             + r"|data|dat|exe|bz2|tar|msi|bin|7z|psd|dmg|iso"
             + r"|epub|dll|cnf|tgz|sha1"
             + r"|thmx|mso|arff|rtf|jar|csv"
-            + r"|rm|smil|wmv|swf|wma|zip|rar|gz|ppsx)$", parsed.path.lower()) # added ppsx to remove Microsoft powerpoint slide files
+            + r"|rm|smil|wmv|swf|wma|zip|rar|gz|ppsx"
+              r"|log"
+              r"|json|xml"
+              r"|sql|db|sqlite)$", parsed.path.lower()) # added ppsx to remove Microsoft powerpoint slide files
 
     except TypeError:
         print ("TypeError for ", parsed)
