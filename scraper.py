@@ -2,6 +2,7 @@ import re
 from urllib.parse import urlparse
 from bs4 import BeautifulSoup
 from urllib.parse import urljoin
+from collections import Counter
 
 #Global Analytics Variables
 visited_urls = set() #track unique pages
@@ -60,6 +61,24 @@ def extract_next_links(url, resp):
         if len(tokens) < 50:
             return list(), 0, list() # skip pages that are too short
         
+        # --- Analytics tracking ---
+        # Track this page as visited
+        visited_urls.add(url)
+
+        # Update global word frequency counter
+        word_counter.update(tokens)
+
+        # Track longest page by raw token count (includes stopwords)
+        global longest_page
+        if raw_token_count > longest_page[1]:
+            longest_page = (url, raw_token_count)
+
+        # Count subdomains under uci.edu
+        parsed = urlparse(url)
+        if parsed.hostname and parsed.hostname.endswith(".uci.edu"):
+            subdomain_counter[parsed.hostname.lower()] += 1
+        # --- End analytics tracking ---
+        
         tags = soup.find_all('a')
         for tag in tags:
             link = tag.get('href')
@@ -116,6 +135,7 @@ def extract_tokens(text):
     clean_tokens = [t.lower() for t in tokens if t.lower() not in STOPWORDS]
 
     return clean_tokens, len(tokens)
+
 
 
 
