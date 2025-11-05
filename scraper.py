@@ -78,6 +78,11 @@ def is_valid(url):
             return False # if the hostname doesn't contain any of these domains then return false
         if parsed.query != None and parsed.query.find("ical") != -1:
             return False # if ical is found in query then it is a calendar so we should return false so we dont get stuck in a trap
+        if parsed.query and re.search(
+            r"(difftype|do=diff|rev|replytocom|share|session|sort|printable)",
+            parsed.query.lower()
+        ):
+            return False  # skip repetitive wiki/diff URLs and dynamic query pages
         if re.search(r"\d{4}-\d{2}-\d{2}", parsed.path.lower()) or re.search(r"\d{4}-\d{2}-\d{2}", parsed.query.lower()) or re.search(r"\d{4}-\d{2}/", parsed.path.lower()) or re.search(r"\d{4}-\d{2}", parsed.query.lower()):
             return False # ignore calendar dates so we dont get stuck in an trap + they don't seem to have much info
         return not re.match(
@@ -114,3 +119,4 @@ def extract_tokens(text):
     clean_tokens = [t.lower() for t in tokens if t.lower() not in STOPWORDS]
 
     return clean_tokens, len(tokens)
+
