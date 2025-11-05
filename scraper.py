@@ -52,6 +52,10 @@ def extract_next_links(url, resp):
             return list(), 0, list() # skip pages that have low textual information content
         tokens, raw_token_count = extract_tokens(text) # get tokens in this url for report
 
+        #Skip overly long pages (likely raw data or low-value text)
+        if raw_token_count > 100000:
+        return list(), 0, list()
+
         if len(tokens) < 50:
             return list(), 0, list() # skip pages that are too short
         
@@ -63,6 +67,7 @@ def extract_next_links(url, resp):
             fragIdx = link.find('#') # find index of fragment part
             if fragIdx != -1:
                 link = link[:fragIdx] # get rid of fragment part
+            
             #Skip invalid or placeholder IP links like https://[YOUR_IP]:8443/
             if "[" in link or "]" in link:
                 continue
@@ -125,8 +130,15 @@ def extract_tokens(text):
     pattern4 = r"\w*[.]\w+" # pattern for words that use decimal numbers like 10.3 or v0.7 or .5 or other words like ph.d
     tokens = re.findall(pattern4 + "|" + pattern3 + "|" + pattern2 + "|" + r"[A-Za-z0-9]+", text) 
 
-    clean_tokens = [t.lower() for t in tokens if len(t) > 1 and t.lower() not in STOPWORDS]
+    # skip stopwords, single-letter tokens, and numeric-only tokens
+    clean_tokens = [
+        t.lower() for t in tokens
+        if t.lower() not in STOPWORDS
+        and len(t) > 1           # skip single-letter words like 'c', 'n', 'o'
+        and not t.isnumeric()    # skip numeric-only tokens
+    ]
 
     return clean_tokens, len(tokens)
+
 
 
