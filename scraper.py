@@ -73,7 +73,7 @@ def extract_next_links(url, resp):
             except ValueError:
                 #skip malformed or invalid URLs that cause parsing errors
                 continue
-                return linkList, raw_token_count, tokens
+        return linkList, raw_token_count, tokens
 
 def is_valid(url):
     # Decide whether to crawl this url or not. 
