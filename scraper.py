@@ -125,7 +125,7 @@ def extract_tokens(text):
     pattern4 = r"\w*[.]\w+" # pattern for words that use decimal numbers like 10.3 or v0.7 or .5 or other words like ph.d
     tokens = re.findall(pattern4 + "|" + pattern3 + "|" + pattern2 + "|" + r"[A-Za-z0-9]+", text) 
 
-    clean_tokens = [t.lower() for t in tokens if t.lower() not in STOPWORDS]
+    clean_tokens = [t.lower() for t in tokens if len(t) > 1 and t.lower() not in STOPWORDS]
 
     return clean_tokens, len(tokens)
 
