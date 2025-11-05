@@ -63,8 +63,17 @@ def extract_next_links(url, resp):
             fragIdx = link.find('#') # find index of fragment part
             if fragIdx != -1:
                 link = link[:fragIdx] # get rid of fragment part
-            linkList.append(urljoin(url, link)) # change relative url into absolute url
-    return linkList, raw_token_count, tokens
+            #Skip invalid or placeholder IP links like https://[YOUR_IP]:8443/
+            if "[" in link or "]" in link:
+                continue
+            #Safely convert relative URLs to absolute URLs
+            try:
+                absolute_link = urljoin(url, link)
+                linkList.append(absolute_link)
+            except ValueError:
+                #skip malformed or invalid URLs that cause parsing errors
+                continue
+                return linkList, raw_token_count, tokens
 
 def is_valid(url):
     # Decide whether to crawl this url or not. 
@@ -119,4 +128,5 @@ def extract_tokens(text):
     clean_tokens = [t.lower() for t in tokens if t.lower() not in STOPWORDS]
 
     return clean_tokens, len(tokens)
+
 
