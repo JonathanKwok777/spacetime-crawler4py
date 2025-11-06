@@ -110,7 +110,8 @@ def is_valid(url):
             + r"|rm|smil|wmv|swf|wma|zip|rar|gz|ppsx"
             + r"|log"
             + r"|json|xml"
-            + r"|sql|db|sqlite)$", parsed.path.lower()) # added ppsx to remove Microsoft powerpoint slide files
+            + r"|sql|db|sqlite"
+            + r"|ff)$", parsed.path.lower()) # added ppsx to remove Microsoft powerpoint slide files
 
     except TypeError:
         print ("TypeError for ", parsed)
