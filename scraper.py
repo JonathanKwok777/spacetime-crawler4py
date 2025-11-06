@@ -54,7 +54,7 @@ def extract_next_links(url, resp):
 
         #Skip overly long pages (likely raw data or low-value text)
         if raw_token_count > 100000:
-        return list(), 0, list()
+            return list(), 0, list()
 
         if len(tokens) < 50:
             return list(), 0, list() # skip pages that are too short
@@ -139,6 +139,7 @@ def extract_tokens(text):
     ]
 
     return clean_tokens, len(tokens)
+
 
 
 
